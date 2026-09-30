@@ -1,0 +1,29 @@
+{
+  "name": "com.dreamy.feature.shop",
+  "version": "0.1.0",
+  "displayName": "Dreamy Shop",
+  "description": "Reusable MVP shop feature with JSON catalog configuration and atomic resource exchanges.",
+  "unity": "6000.0",
+  "type": "library",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Dreamy Studio"
+  },
+  "dependencies": {
+    "com.dreamy.core": "1.1.2",
+    "com.dreamy.dataconfig": "0.2.0",
+    "com.dreamy.feature.economy": "0.1.0",
+    "com.dreamy.feature": "0.1.0",
+    "com.dreamy.ui": "0.2.0",
+    "com.cysharp.unitask": "2.5.10"
+  },
+  "keywords": ["shop", "economy", "mvp", "dreamy"],
+  "testables": ["Tests"],
+  "samples": [
+    {
+      "displayName": "Shop Feature",
+      "description": "Copy-ready UIPanel integration with JSON catalog and in-memory resource wallet.",
+      "path": "Samples~/Shop Feature"
+    }
+  ]
+}

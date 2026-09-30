@@ -1,0 +1,19 @@
+{
+  "name": "Dreamy.Shop.Runtime",
+  "rootNamespace": "Dreamy.Shop",
+  "references": [
+    "Dreamy.Core.Runtime",
+    "Dreamy.DataConfig.Runtime",
+    "Dreamy.Economy.Runtime",
+    "UniTask"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

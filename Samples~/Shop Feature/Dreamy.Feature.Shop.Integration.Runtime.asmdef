@@ -1,0 +1,22 @@
+{
+    "name": "Dreamy.Feature.Shop.Integration.Runtime",
+    "rootNamespace": "Dreamy.Feature.Shop.Integration",
+    "references": [
+        "Dreamy.Shop.Runtime",
+        "Dreamy.Economy.Runtime",
+        "Dreamy.Core.Runtime",
+        "Dreamy.UI.Runtime",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

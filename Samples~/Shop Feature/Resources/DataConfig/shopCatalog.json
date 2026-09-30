@@ -1,0 +1,75 @@
+{
+  "catalogId": "main-shop",
+  "offers": [
+    {
+      "id": "bomb-pack",
+      "titleKey": "shop.bomb-pack",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.coin",
+      "costAmount": 25,
+      "rewards": [{ "resourceId": "booster.bomb", "amount": 1 }]
+    },
+    {
+      "id": "rocket-bundle",
+      "titleKey": "shop.rocket-bundle",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.coin",
+      "costAmount": 80,
+      "rewards": [{ "resourceId": "booster.rocket", "amount": 3 }]
+    },
+    {
+      "id": "booster-bundle",
+      "titleKey": "shop.booster-bundle",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.gem",
+      "costAmount": 10,
+      "rewards": [
+        { "resourceId": "booster.bomb", "amount": 2 },
+        { "resourceId": "booster.rocket", "amount": 2 }
+      ]
+    },
+    {
+      "id": "iap-coin-pack-small",
+      "titleKey": "shop.iap-coin-pack-small",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.coin_pack_small",
+      "displayPrice": "$0.99",
+      "rewards": [{ "resourceId": "currency.coin", "amount": 1000 }]
+    },
+    {
+      "id": "iap-gem-pack-small",
+      "titleKey": "shop.iap-gem-pack-small",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.gem_pack_small",
+      "displayPrice": "$0.99",
+      "rewards": [{ "resourceId": "currency.gem", "amount": 20 }]
+    },
+    {
+      "id": "iap-starter-pack",
+      "titleKey": "shop.iap-starter-pack",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.starter_pack",
+      "displayPrice": "$2.99",
+      "rewards": [
+        { "resourceId": "currency.coin", "amount": 500 },
+        { "resourceId": "currency.gem", "amount": 60 }
+      ]
+    },
+    {
+      "id": "iap-remove-ads",
+      "titleKey": "shop.iap-remove-ads",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.remove_ads",
+      "displayPrice": "$1.99",
+      "rewards": [{ "resourceId": "entitlement.remove-ads", "amount": 1 }]
+    },
+    {
+      "id": "iap-double-rewards",
+      "titleKey": "shop.iap-double-rewards",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.double_rewards",
+      "displayPrice": "$2.99",
+      "rewards": [{ "resourceId": "entitlement.double-rewards", "amount": 1 }]
+    }
+  ]
+}
