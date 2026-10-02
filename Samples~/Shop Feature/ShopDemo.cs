@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Dreamy.Feature.Shop.Integration
 {
-    public sealed class ShopController : MonoBehaviour
+    public sealed class ShopDemo : MonoBehaviour
     {
         [SerializeField] private ShopPanel panel;
         private ShopPresenter presenter;

@@ -57,11 +57,19 @@ namespace Dreamy.Feature.Shop.Integration
         private void EnsureItems(int count)
         {
             if (offerItemPrefab == null || offerContainer == null) throw new InvalidOperationException("Assign an offer item prefab and container.");
+            bool addedItems = false;
             while (items.Count < count)
             {
                 ShopOfferItem item = Instantiate(offerItemPrefab, offerContainer);
+                item.EnsureTweenDelaySlot();
                 item.PurchaseRequested += RequestPurchase;
                 items.Add(item);
+                addedItems = true;
+            }
+
+            if (addedItems)
+            {
+                GetComponentInChildren<TweenDelayControl>(true)?.ApplyStaggerDelays();
             }
         }
 

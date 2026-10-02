@@ -1,5 +1,6 @@
 using System;
 using Dreamy.Shop;
+using Dreamy.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +30,12 @@ namespace Dreamy.Feature.Shop.Integration
         }
 
         public void SetPurchaseInteractable(bool interactable) => purchaseButton.interactable = interactable;
+
+        /// <summary>Ensures dynamically created offers participate in their parent staggered tween sequence.</summary>
+        public void EnsureTweenDelaySlot()
+        {
+            if (GetComponent<TweenDelayByIndex>() == null) gameObject.AddComponent<TweenDelayByIndex>();
+        }
 
         private void RequestPurchase() => PurchaseRequested?.Invoke(offerId);
     }

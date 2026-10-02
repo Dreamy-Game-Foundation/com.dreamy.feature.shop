@@ -15,7 +15,7 @@ Reusable MVP Shop feature for casual and puzzle games.
 Import **Shop Feature** from Package Manager. The imported folder contains:
 
 - `ShopPanel.prefab`: a `BaseFeaturePanel` variant with safe area, backdrop fade, content scale, stagger control, status, offer list, and close button.
-- `ShopOfferItem.prefab`: a `BaseFeatureItem` variant with fade/scale tween, title, reward, price, and purchase button.
+- `ShopOfferItem.prefab`: a `BaseFeatureItem` variant with fade/scale tween, title, reward, price, and purchase button. Dynamically spawned offers automatically join the panel's staggered tween sequence; no delay component is required on the item prefab.
 - `shopCatalog.json`: copy-ready catalog data under `Resources/DataConfig`.
 - `ShopPanel`, `ShopOfferItem`, and `ShopController`: replaceable host integration classes.
 
