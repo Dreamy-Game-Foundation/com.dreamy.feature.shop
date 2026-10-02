@@ -1,6 +1,6 @@
 {
   "name": "com.dreamy.feature.shop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "Dreamy Shop",
   "description": "Reusable MVP shop feature with JSON catalog configuration and atomic resource exchanges.",
   "unity": "6000.0",
@@ -12,7 +12,7 @@
   "dependencies": {
     "com.dreamy.core": "1.1.2",
     "com.dreamy.dataconfig": "0.2.0",
-    "com.dreamy.feature.economy": "0.1.0",
+    "com.dreamy.feature.economy": "0.2.0",
     "com.dreamy.feature": "0.1.0",
     "com.dreamy.ui": "0.2.0",
     "com.cysharp.unitask": "2.5.10"
