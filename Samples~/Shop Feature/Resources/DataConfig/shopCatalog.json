@@ -70,6 +70,150 @@
       "storeProductId": "com.dreamy.sample.double_rewards",
       "displayPrice": "$2.99",
       "rewards": [{ "resourceId": "entitlement.double-rewards", "amount": 1 }]
+    },
+    {
+      "id": "mega-bomb-cache",
+      "titleKey": "shop.mega-bomb-cache",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.coin",
+      "costAmount": 180,
+      "rewards": [{ "resourceId": "booster.bomb", "amount": 8 }]
+    },
+    {
+      "id": "mega-rocket-cache",
+      "titleKey": "shop.mega-rocket-cache",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.gem",
+      "costAmount": 35,
+      "rewards": [{ "resourceId": "booster.rocket", "amount": 8 }]
+    },
+    {
+      "id": "iap-gem-pack-large",
+      "titleKey": "shop.iap-gem-pack-large",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.gem_pack_large",
+      "displayPrice": "$6.99 USD",
+      "rewards": [{ "resourceId": "currency.gem", "amount": 120 }]
+    },
+    {
+      "id": "iap-ultimate-saver-bundle",
+      "titleKey": "shop.iap-ultimate-saver-bundle",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.ultimate_saver_bundle",
+      "displayPrice": "$12.99 USD",
+      "rewards": [
+        { "resourceId": "currency.coin", "amount": 5000 },
+        { "resourceId": "currency.gem", "amount": 250 }
+      ]
+    },
+    {
+      "id": "daily-bomb-deal",
+      "titleKey": "shop.daily-bomb-deal",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.coin",
+      "costAmount": 60,
+      "rewards": [{ "resourceId": "booster.bomb", "amount": 3 }]
+    },
+    {
+      "id": "daily-rocket-deal",
+      "titleKey": "shop.daily-rocket-deal",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.coin",
+      "costAmount": 110,
+      "rewards": [{ "resourceId": "booster.rocket", "amount": 4 }]
+    },
+    {
+      "id": "bomb-rocket-duo",
+      "titleKey": "shop.bomb-rocket-duo",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.gem",
+      "costAmount": 22,
+      "rewards": [
+        { "resourceId": "booster.bomb", "amount": 3 },
+        { "resourceId": "booster.rocket", "amount": 3 }
+      ]
+    },
+    {
+      "id": "coin-to-gem-exchange",
+      "titleKey": "shop.coin-to-gem-exchange",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.coin",
+      "costAmount": 500,
+      "rewards": [{ "resourceId": "currency.gem", "amount": 15 }]
+    },
+    {
+      "id": "gem-to-coin-exchange",
+      "titleKey": "shop.gem-to-coin-exchange",
+      "purchaseKind": "VirtualCurrency",
+      "costResourceId": "currency.gem",
+      "costAmount": 15,
+      "rewards": [{ "resourceId": "currency.coin", "amount": 1000 }]
+    },
+    {
+      "id": "iap-coin-pack-medium",
+      "titleKey": "shop.iap-coin-pack-medium",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.coin_pack_medium",
+      "displayPrice": "$2.99 USD",
+      "rewards": [{ "resourceId": "currency.coin", "amount": 3000 }]
+    },
+    {
+      "id": "iap-coin-pack-large",
+      "titleKey": "shop.iap-coin-pack-large",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.coin_pack_large",
+      "displayPrice": "$8.99 USD",
+      "rewards": [{ "resourceId": "currency.coin", "amount": 10000 }]
+    },
+    {
+      "id": "iap-gem-pack-medium",
+      "titleKey": "shop.iap-gem-pack-medium",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.gem_pack_medium",
+      "displayPrice": "$2.99 USD",
+      "rewards": [{ "resourceId": "currency.gem", "amount": 55 }]
+    },
+    {
+      "id": "iap-bomb-booster-pack",
+      "titleKey": "shop.iap-bomb-booster-pack",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.bomb_booster_pack",
+      "displayPrice": "$3.99 USD",
+      "rewards": [{ "resourceId": "booster.bomb", "amount": 10 }]
+    },
+    {
+      "id": "iap-rocket-booster-pack",
+      "titleKey": "shop.iap-rocket-booster-pack",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.rocket_booster_pack",
+      "displayPrice": "$3.99 USD",
+      "rewards": [{ "resourceId": "booster.rocket", "amount": 10 }]
+    },
+    {
+      "id": "iap-super-value-bundle",
+      "titleKey": "shop.iap-super-value-bundle",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.super_value_bundle",
+      "displayPrice": "$19.99 USD",
+      "rewards": [
+        { "resourceId": "currency.coin", "amount": 7500 },
+        { "resourceId": "currency.gem", "amount": 350 },
+        { "resourceId": "booster.bomb", "amount": 8 },
+        { "resourceId": "booster.rocket", "amount": 8 }
+      ]
+    },
+    {
+      "id": "iap-complete-collection",
+      "titleKey": "shop.iap-complete-collection",
+      "purchaseKind": "Iap",
+      "storeProductId": "com.dreamy.sample.complete_collection",
+      "displayPrice": "$24.99 USD",
+      "rewards": [
+        { "resourceId": "currency.coin", "amount": 12000 },
+        { "resourceId": "currency.gem", "amount": 500 },
+        { "resourceId": "booster.bomb", "amount": 15 },
+        { "resourceId": "booster.rocket", "amount": 15 }
+      ]
     }
   ]
 }
