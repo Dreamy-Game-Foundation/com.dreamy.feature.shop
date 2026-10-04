@@ -1,36 +1,133 @@
 # Dreamy Shop
 
-Reusable MVP Shop feature for casual and puzzle games.
+Package thuộc Dreamy Game Studio. Hướng dẫn dưới đây mô tả cấu trúc, cách cài vào project và tích hợp ở root/scene.
 
-## Runtime boundaries
+## Cài package
 
-- `ShopCatalogConfig` owns validated JSON design data.
-- `ShopModel` performs atomic virtual-currency exchanges and grants IAP rewards only after a purchase gateway confirms a store transaction.
-- `ShopPresenter` coordinates `IShopService` and `IShopView`.
-- The host game owns `IResourceWallet`, persistence, analytics, localization, final visuals, and the store SDK adapter.
-- Runtime contains no concrete `MonoBehaviour` view or project prefab dependency.
+Dùng Unity 6000.0 trở lên. Sandbox đã tham chiếu package bằng `file:../LocalPackages/com.dreamy.feature.shop`. Project khác dùng Package Manager > + > Install package from disk và chọn package.json, hoặc Git URL của repository nội bộ. Cài cả dependency Dreamy/Git vào manifest của game; version dependency không tự cấu hình registry riêng.
 
-## Use the sample
+Dependency trực tiếp theo package.json:
 
-Import **Shop Feature** from Package Manager. The imported folder contains:
+- `com.dreamy.core` (1.1.2)
+- `com.dreamy.dataconfig` (0.2.0)
+- `com.dreamy.feature.economy` (0.2.0)
+- `com.dreamy.feature` (0.1.0)
+- `com.dreamy.ui` (0.2.0)
+- `com.cysharp.unitask` (2.5.10)
 
-- `ShopPanel.prefab`: a `BaseFeaturePanel` variant with safe area, backdrop fade, content scale, stagger control, status, offer list, and close button.
-- `ShopOfferItem.prefab`: a `BaseFeatureItem` variant with fade/scale tween, title, reward, price, and purchase button. Dynamically spawned offers automatically join the panel's staggered tween sequence; no delay component is required on the item prefab.
-- `shopCatalog.json`: copy-ready catalog data under `Resources/DataConfig`.
-- `ShopPanel`, `ShopOfferItem`, and `ShopController`: replaceable host integration classes.
+## Cấu trúc và asmdef
 
-Register the catalog before initializing DataConfig, register an `IResourceWallet`, then install the feature:
+| Assembly | Reference | Phạm vi |
+| --- | --- | --- |
+| `Dreamy.Shop.Runtime` | Dreamy.Core.Runtime, Dreamy.DataConfig.Runtime, Dreamy.Economy.Runtime, UniTask | Runtime |
+
+Trong asmdef của game, thêm assembly chứa API trực tiếp sử dụng. Code bootstrap reference thêm Core/DataConfig/Datasave/Economy theo nhu cầu; code async reference UniTask. Code gọi type sample reference assembly sample. Giữ Editor reference trong asmdef Editor-only.
+
+## Cấu trúc package và luồng dữ liệu
+
+| Thư mục | Vai trò |
+| --- | --- |
+| Runtime/Config | ShopCatalogConfig: đọc và validate catalog JSON. |
+| Runtime/Contracts | IShopService, IShopView và IShopPurchaseGateway. |
+| Runtime/Domain | ShopModel: exchange wallet, xác nhận purchase và tạo state/result. |
+| Runtime/Presentation | ShopPresenter: nối service với panel, xử lý mua/đóng. |
+| Runtime/Installation | ShopInstaller: đăng ký config, cài IShopService. |
+| Samples~/Shop Feature | Panel, item, ShopDemo, gateway mô phỏng, prefab và JSON. |
+
+Luồng: GameInstaller → config/wallet/gateway → IShopService → ShopPresenter → ShopPanel. Game sở hữu service dùng chung và tích hợp store thật.
+
+## Cài service trong root GameInstaller
+
+Ghép method sau vào bootstrap hiện có và await trước khi đánh dấu game Ready hoặc mở Shop. Đây là ví dụ root tối thiểu; nếu game đã có Datasave/DataConfig/wallet, dùng lại instance và thêm phần Shop vào đúng bước.
 
 ```csharp
-ShopInstaller.RegisterConfig(dataConfigService);
-await dataConfigService.InitializeAsync(cancellationToken);
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using Dreamy.Core;
+using Dreamy.DataConfig;
+using Dreamy.Datasave;
+using Dreamy.Economy;
+using Dreamy.Shop;
 
-ServiceLocator.Register<IDataConfigService>(dataConfigService);
-ServiceLocator.Register<IResourceWallet>(wallet);
-ServiceLocator.Register<IShopPurchaseGateway>(purchaseGateway);
-ShopInstaller.Install();
+// Method bên trong GameInstaller.
+private async UniTask InstallShopAsync(
+    IShopPurchaseGateway purchaseGateway,
+    CancellationToken cancellationToken)
+{
+    var datasave = new DatasaveService();
+    ServiceLocator.Register<IDatasaveService>(datasave);
+
+    var wallet = new DatasaveResourceWallet(datasave);
+    ServiceLocator.Register<IResourceWallet>(wallet);
+    ServiceLocator.Register<IResourceBalanceProvider>(
+        (IResourceBalanceProvider)wallet);
+
+    var dataConfig = new DataConfigService(
+        new ResourcesJsonConfigSource());
+    ShopInstaller.RegisterConfig(dataConfig);
+    await dataConfig.InitializeAsync(cancellationToken);
+    ServiceLocator.Register<IDataConfigService>(dataConfig);
+
+    ServiceLocator.Register<IShopPurchaseGateway>(purchaseGateway);
+    ShopInstaller.Install();
+}
 ```
 
-`purchaseKind: "VirtualCurrency"` offers use `costResourceId` and `costAmount`. `purchaseKind: "Iap"` offers use `storeProductId`, optional `displayPrice`, and rewards. The sample `SimulatedShopPurchaseGateway` confirms IAP offers immediately for Foundation testing. Replace it in the game with an `IShopPurchaseGateway` adapter over `DreamySDK.Purchase`; Shop Runtime has no SDK dependency.
+Truyền gateway thanh toán của game vào method. Khi thử sample, có thể dùng SimulatedShopPurchaseGateway từ namespace Dreamy.Feature.Shop.Integration; thay bằng adapter store thật khi làm production. Wallet ví dụ không seed tiền; thiết lập balance ban đầu theo game.
 
-The sample UI may be copied into a game feature folder and customized as prefab variants without changing package Runtime.
+Giữ đúng một Resources/DataConfig/shopCatalog.json. Đăng ký catalog trước InitializeAsync; cài Shop sau khi config và wallet sẵn sàng. Nếu root đã khởi tạo DataConfig, thêm RegisterConfig vào bước đăng ký chung thay vì load lại service.
+
+Asmdef của GameInstaller cần Core, DataConfig, Datasave, Economy, Shop Runtime và UniTask. Root unregister IShopService/IShopPurchaseGateway khi teardown; service config/save/wallet dùng chung được dọn theo lifecycle root.
+
+## Addressables Group và PanelAddress
+
+1. Tạo variant từ sample Prefabs/ShopPanel.prefab, lưu tại Assets/_Project/Prefabs/Panel/ShopPanel.prefab.
+2. Kiểm tra root có ShopPanel và đã gán close button, status label, offer container, ShopOfferItem prefab.
+3. Mở Window > Asset Management > Addressables > Groups; tạo settings nếu cần.
+4. Tạo group UI Panels, kéo prefab variant vào group.
+5. Đặt cột Address thành Panel/ShopPanel.prefab. HomePanel dùng Panel/HomePanel.prefab.
+6. Tạo class chung trong code game:
+
+```csharp
+public static class PanelAddress
+{
+    public const string Home = "Panel/HomePanel.prefab";
+    public const string Shop = "Panel/ShopPanel.prefab";
+}
+```
+
+Address là key tự đặt, không phải đường dẫn asset tự động. Constant phải khớp cột Address, kể cả chữ hoa/thường. Tên group không nằm trong key. Item prefab được panel reference trực tiếp nên không cần address riêng để spawn offer.
+
+## Mở panel sau khi root đã Ready
+
+Code UI cần namespace Dreamy.UI, Dreamy.Core, Dreamy.Shop và Dreamy.Feature.Shop.Integration. Reference Dreamy.UI.Runtime, Dreamy.Shop.Runtime, Dreamy.Core.Runtime, UniTask và Dreamy.Feature.Shop.Integration.Runtime trong asmdef.
+
+Trong method async UniTask:
+
+```csharp
+ShopPanel panel = await PanelManager.Instance.Create<ShopPanel>(
+    PanelAddress.Shop);
+
+var presenter = new ShopPresenter(
+    ServiceLocator.Get<IShopService>(), panel);
+panel.Destroyed += presenter.Dispose;
+presenter.Show();
+await panel.Show();
+```
+
+Host giữ một presenter cho mỗi panel instance. Nếu panel được cache, dùng lại presenter và gọi Show() khi mở lại; không tạo thêm presenter mỗi lần mở cùng instance. Khi dùng luồng host này, bỏ ShopDemo trên instance nếu có để tránh hai presenter xử lý cùng button.
+
+Scene cần Canvas có PanelManager và EventSystem. Nút Close được presenter xử lý; đóng từ code bằng:
+
+```csharp
+await PanelManager.Instance.Close<ShopPanel>();
+```
+
+Build Addressables content cho target trước khi test player. Đóng panel không unload cache prefab; chỉ unload khi không còn instance/consumer dùng asset.
+
+## Import sample
+
+Mở Window > Package Manager, chọn Dreamy Shop > Samples > Import. Unity chép vào Assets/Samples/Dreamy Shop/0.1.1/. Chuyển cả folder nếu tùy biến, giữ .meta và reference prefab; không giữ bản script/asmdef hoặc Resources document trùng.
+
+- **Shop Feature**: nguồn `Samples~/Shop Feature`.
+  Assembly `Dreamy.Feature.Shop.Integration.Runtime` reference Dreamy.Shop.Runtime, Dreamy.Economy.Runtime, Dreamy.Core.Runtime, Dreamy.UI.Runtime, Unity.TextMeshPro, UnityEngine.UI, UniTask.
