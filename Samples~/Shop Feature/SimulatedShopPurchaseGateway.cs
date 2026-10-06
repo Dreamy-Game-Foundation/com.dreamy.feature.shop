@@ -11,9 +11,10 @@ namespace Dreamy.Feature.Shop.Integration
             ShopGatewayPurchaseRequest request,
             CancellationToken cancellationToken = default)
         {
-            return UniTask.FromResult(cancellationToken.IsCancellationRequested
-                ? ShopGatewayPurchaseResult.Cancelled()
-                : ShopGatewayPurchaseResult.Purchased(Guid.NewGuid().ToString("N")));
+            if (cancellationToken.IsCancellationRequested)
+                return UniTask.FromResult(ShopGatewayPurchaseResult.Cancelled());
+
+            return UniTask.FromResult(ShopGatewayPurchaseResult.Purchased(Guid.NewGuid().ToString("N")));
         }
     }
 }

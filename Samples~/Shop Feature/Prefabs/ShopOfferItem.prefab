@@ -251,7 +251,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -388,7 +388,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -525,7 +525,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -562,20 +562,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 445044193832801274, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 0}
+    - target: {fileID: 445044193832801274, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: m_Color.b
-      value: 0.37330395
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 445044193832801274, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: m_Color.g
-      value: 0.37330395
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 445044193832801274, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: m_Color.r
-      value: 0.9496855
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 445044193832801274, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 756824055629973411, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: settings
-      value: 
+      value:
       objectReference: {fileID: 11400000, guid: 03827c79be381164eb2d9e7e255cc946, type: 2}
     - target: {fileID: 1938968844150045027, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: m_ChildAlignment
@@ -596,6 +604,14 @@ PrefabInstance:
     - target: {fileID: 4526581471354358920, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: m_Color.r
       value: 0.25471687
+      objectReference: {fileID: 0}
+    - target: {fileID: 5733358176875599367, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 5733358176875599367, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 5733358176875599367, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -687,7 +703,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7038567639558500459, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: settings
-      value: 
+      value:
       objectReference: {fileID: 11400000, guid: 0229910a5ad190348bd43a7a843eb43a, type: 2}
     - target: {fileID: 7492683581433044418, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
       propertyPath: m_SizeDelta.y
@@ -730,6 +746,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7492683581433044418, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
   m_PrefabInstance: {fileID: 6021303076129377560}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6170752175126978274 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 445044193832801274, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
+  m_PrefabInstance: {fileID: 6021303076129377560}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1 &7269925309337669171 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3993568841356084011, guid: 68d8c2132ae54f1fb919cc3ec4fa3e1b, type: 3}
@@ -751,6 +778,7 @@ MonoBehaviour:
   costText: {fileID: 1996149388026350287}
   rewardText: {fileID: 8324881571062263111}
   purchaseButton: {fileID: 8842975571567534651}
+  iconImage: {fileID: 6170752175126978274}
 --- !u!114 &8862300477882601877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -780,7 +808,7 @@ MonoBehaviour:
   shineShader: {fileID: 4800000, guid: 2074739dd0f4452fb142e8d328ad12a9, type: 3}
   playOnEnable: 1
   speed: 0.6
-  phase: 0.5247556
+  phase: 0.9366767
   rotation: 45
   shineColor: {r: 1, g: 1, b: 1, a: 0.7}
   width: 0.18

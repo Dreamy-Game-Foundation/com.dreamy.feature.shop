@@ -695,6 +695,8 @@ MonoBehaviour:
   statusText: {fileID: 5035940815149266796}
   offerContainer: {fileID: 6965859845317548145}
   offerItemPrefab: {fileID: 5563508889273868629, guid: b18a699ac0ef35d43a639269ca3e6245, type: 3}
+  iconAtlas: {fileID: 100100200, guid: b3ab08076877e4d48ad37af178afd723, type: 3}
+  fallbackIcon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
 --- !u!114 &6871799070329584564
 MonoBehaviour:
   m_ObjectHideFlags: 0

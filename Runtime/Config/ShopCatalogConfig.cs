@@ -49,8 +49,20 @@ namespace Dreamy.Shop
         [JsonProperty("titleKey", Required = Required.Always)]
         private string titleKey;
 
+        [JsonProperty("rewardText")]
+        private string rewardText;
+
+        [JsonProperty("iconKey")]
+        private string iconKey;
+
         [JsonProperty("purchaseKind", Required = Required.Always)]
         private ShopPurchaseKind purchaseKind;
+
+        [JsonProperty("purchaseOnce")]
+        private bool purchaseOnce;
+
+        [JsonProperty("ownershipResourceId")]
+        private string ownershipResourceId;
 
         [JsonProperty("costResourceId")]
         private string costResourceId;
@@ -74,7 +86,20 @@ namespace Dreamy.Shop
         public string TitleKey => titleKey;
 
         [JsonIgnore]
+        public string RewardText => rewardText ?? string.Empty;
+
+        /// <summary>Optional presentation key resolved by the host's icon provider.</summary>
+        [JsonIgnore]
+        public string IconKey => iconKey;
+
+        [JsonIgnore]
         public ShopPurchaseKind PurchaseKind => purchaseKind;
+
+        [JsonIgnore]
+        public bool PurchaseOnce => purchaseOnce;
+
+        [JsonIgnore]
+        public ResourceId OwnershipResourceId => new(ownershipResourceId);
 
         [JsonIgnore]
         public ResourceAmount Cost => new(new ResourceId(costResourceId), costAmount);
@@ -115,6 +140,17 @@ namespace Dreamy.Shop
             foreach (ShopResourceConfig reward in rewards)
             {
                 reward?.Validate(documentName, id);
+            }
+
+            if (purchaseOnce)
+            {
+                if (!ResourceId.TryParse(ownershipResourceId, out ResourceId ownershipId))
+                    throw new DataConfigException(documentName, $"Offer '{id}' requires a valid ownershipResourceId.");
+                int ownershipRewards = 0;
+                foreach (ShopResourceConfig reward in rewards)
+                    if (reward != null && reward.Resource.ResourceId == ownershipId) ownershipRewards++;
+                if (ownershipRewards != 1 || rewards[rewards.Count - 1] == null || rewards[rewards.Count - 1].Resource.ResourceId != ownershipId)
+                    throw new DataConfigException(documentName, $"Offer '{id}' must grant its ownership resource exactly once, as the last reward.");
             }
         }
     }

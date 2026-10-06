@@ -20,15 +20,19 @@ namespace Dreamy.Shop
                 ServiceLocator.Get<IResourceWallet>(),
                 ServiceLocator.TryGet<IShopPurchaseGateway>(out IShopPurchaseGateway purchaseGateway)
                     ? purchaseGateway
+                    : null,
+                ServiceLocator.TryGet<IResourceBalanceProvider>(out IResourceBalanceProvider balances)
+                    ? balances
                     : null);
         }
 
         public static IShopService Install(
             ShopCatalogConfig catalog,
             IResourceWallet wallet,
-            IShopPurchaseGateway purchaseGateway = null)
+            IShopPurchaseGateway purchaseGateway = null,
+            IResourceBalanceProvider balances = null)
         {
-            ShopModel service = new(catalog, wallet, purchaseGateway);
+            ShopModel service = new(catalog, wallet, purchaseGateway, balances);
             ServiceLocator.Register<IShopService>(service);
             return service;
         }

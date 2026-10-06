@@ -5,6 +5,7 @@ using Dreamy.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.U2D;
 
 namespace Dreamy.Feature.Shop.Integration
 {
@@ -14,14 +15,21 @@ namespace Dreamy.Feature.Shop.Integration
         [SerializeField] private TMP_Text statusText;
         [SerializeField] private Transform offerContainer;
         [SerializeField] private ShopOfferItem offerItemPrefab;
+        [SerializeField] private SpriteAtlas iconAtlas;
+        [SerializeField] private Sprite fallbackIcon;
         private readonly List<ShopOfferItem> items = new();
+        // GetSprite creates clones. This panel owns and destroys them.
+        private readonly Dictionary<string, Sprite> icons = new(StringComparer.Ordinal);
 
         public override bool CanBack => true;
         public event Action<string> PurchaseRequested;
         public event Action CloseRequested;
         public event Action Destroyed;
 
-        private void OnEnable() => closeButton.onClick.AddListener(RequestClose);
+        private void OnEnable()
+        {
+            closeButton.onClick.AddListener(RequestClose);
+        }
         protected override void OnDisable()
         {
             closeButton.onClick.RemoveListener(RequestClose);
@@ -31,7 +39,13 @@ namespace Dreamy.Feature.Shop.Integration
         public void Render(ShopViewState state)
         {
             EnsureItems(state.Offers.Count);
-            for (int index = 0; index < state.Offers.Count; index++) items[index].Render(state.Offers[index]);
+            for (int index = 0; index < items.Count; index++)
+            {
+                items[index].gameObject.SetActive(index < state.Offers.Count);
+                if (index >= state.Offers.Count) continue;
+                items[index].Render(state.Offers[index]);
+                items[index].SetIcon(ResolveIcon(state.Offers[index].Offer.IconKey));
+            }
         }
 
         public void ShowPurchaseResult(ShopPurchaseResult result) =>
@@ -49,7 +63,14 @@ namespace Dreamy.Feature.Shop.Integration
 
         protected override void OnDestroy()
         {
-            foreach (ShopOfferItem item in items) if (item != null) Destroy(item.gameObject);
+            foreach (ShopOfferItem item in items)
+            {
+                if (item == null) continue;
+                item.SetIcon(null);
+                Destroy(item.gameObject);
+            }
+            foreach (Sprite sprite in icons.Values) if (sprite != null) Destroy(sprite);
+            icons.Clear();
             Destroyed?.Invoke();
             base.OnDestroy();
         }
@@ -75,5 +96,18 @@ namespace Dreamy.Feature.Shop.Integration
 
         private void RequestPurchase(string offerId) => PurchaseRequested?.Invoke(offerId);
         private void RequestClose() => CloseRequested?.Invoke();
+
+        private Sprite ResolveIcon(string key)
+        {
+            if (iconAtlas == null || string.IsNullOrWhiteSpace(key)) return fallbackIcon;
+            if (!icons.TryGetValue(key, out Sprite sprite))
+            {
+                sprite = iconAtlas.GetSprite(key);
+                icons.Add(key, sprite);
+                if (sprite == null)
+                    Debug.LogWarning($"Shop icon '{key}' was not found in atlas '{iconAtlas.name}'.", this);
+            }
+            return sprite != null ? sprite : fallbackIcon;
+        }
     }
 }

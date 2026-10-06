@@ -15,14 +15,18 @@ namespace Dreamy.Shop
 
     public readonly struct ShopOfferViewState
     {
-        public ShopOfferViewState(ShopOfferConfig offer)
+        public ShopOfferViewState(ShopOfferConfig offer, bool isOwned = false)
         {
             Offer = offer ?? throw new ArgumentNullException(nameof(offer));
+            IsOwned = isOwned;
         }
 
         public ShopOfferConfig Offer { get; }
 
-        public string PurchaseLabel => Offer.PurchaseKind == ShopPurchaseKind.Iap
+        public bool IsOwned { get; }
+        public bool CanPurchase => !IsOwned;
+
+        public string PurchaseLabel => IsOwned ? "Owned" : Offer.PurchaseKind == ShopPurchaseKind.Iap
             ? string.IsNullOrWhiteSpace(Offer.DisplayPrice) ? Offer.StoreProductId : Offer.DisplayPrice
             : $"{Offer.Cost.Amount} {Offer.Cost.ResourceId}";
     }

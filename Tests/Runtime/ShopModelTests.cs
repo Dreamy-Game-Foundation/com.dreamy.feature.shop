@@ -49,6 +49,86 @@ namespace Dreamy.Shop.Tests
             Assert.That(wallet.GrantRequests[1].Resource.Amount, Is.EqualTo(60));
         }
 
+        [Test]
+        public void PurchaseOnce_RejectsRepurchaseAndReadsOwnershipOnNewModel()
+        {
+            var catalog = CreateCatalog(CreateOnceOffer());
+            var wallet = new RecordingWallet();
+            var gateway = new SuccessfulPurchaseGateway();
+            var model = new ShopModel(catalog, wallet, gateway);
+            Assert.That(model.PurchaseAsync("iap-starter-pack").GetAwaiter().GetResult().IsSuccess, Is.True);
+            Assert.That(model.PurchaseAsync("iap-starter-pack").GetAwaiter().GetResult().Status, Is.EqualTo(ShopPurchaseStatus.AlreadyOwned));
+            Assert.That(model.Purchase("iap-starter-pack").Status, Is.EqualTo(ShopPurchaseStatus.AlreadyOwned));
+            Assert.That(gateway.CallCount, Is.EqualTo(1));
+            Assert.That(wallet.GrantRequests.Count, Is.EqualTo(1));
+            var reopened = new ShopModel(catalog, wallet, gateway);
+            Assert.That(reopened.GetState().Offers[0].IsOwned, Is.True);
+            Assert.That(reopened.GetState().Offers[0].CanPurchase, Is.False);
+            Assert.That(reopened.GetState().Offers[0].PurchaseLabel, Is.EqualTo("Owned"));
+        }
+
+        [Test]
+        public void Consumable_AllowsRepeatedPurchases()
+        {
+            var gateway = new SuccessfulPurchaseGateway();
+            var model = new ShopModel(CreateCatalog(CreateIapOffer()), new RecordingWallet(), gateway);
+            Assert.That(model.PurchaseAsync("iap-starter-pack").GetAwaiter().GetResult().IsSuccess, Is.True);
+            Assert.That(model.PurchaseAsync("iap-starter-pack").GetAwaiter().GetResult().IsSuccess, Is.True);
+            Assert.That(gateway.CallCount, Is.EqualTo(2));
+            Assert.That(model.GetState().Offers[0].IsOwned, Is.False);
+        }
+
+        [Test]
+        public void PendingPurchase_BlocksDuplicateAndAllowsRetryAfterCancellation()
+        {
+            var gateway = new DeferredGateway();
+            var model = new ShopModel(CreateCatalog(CreateOnceOffer()), new RecordingWallet(), gateway);
+            var first = model.PurchaseAsync("iap-starter-pack");
+            Assert.That(model.PurchaseAsync("iap-starter-pack").GetAwaiter().GetResult().Status, Is.EqualTo(ShopPurchaseStatus.PurchaseInProgress));
+            Assert.That(gateway.CallCount, Is.EqualTo(1));
+            gateway.Complete(ShopGatewayPurchaseResult.Cancelled());
+            Assert.That(first.GetAwaiter().GetResult().Status, Is.EqualTo(ShopPurchaseStatus.PurchaseCancelled));
+            var retry = model.PurchaseAsync("iap-starter-pack");
+            gateway.Complete(ShopGatewayPurchaseResult.Purchased("retry-tx"));
+            Assert.That(retry.GetAwaiter().GetResult().IsSuccess, Is.True);
+            Assert.That(gateway.CallCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void PurchaseOnce_RequiresOwnershipReward()
+        {
+            var offer = CreateIapOffer();
+            Set(offer, "purchaseOnce", true);
+            Set(offer, "ownershipResourceId", "entitlement.remove-ads");
+            Assert.Throws<Dreamy.DataConfig.DataConfigException>(() => CreateCatalog(offer));
+        }
+
+        private static ShopOfferConfig CreateOnceOffer()
+        {
+            var offer = CreateIapOffer();
+            var reward = new ShopResourceConfig();
+            Set(reward, "resourceId", "entitlement.remove-ads");
+            Set(reward, "amount", 1L);
+            Set(offer, "purchaseOnce", true);
+            Set(offer, "ownershipResourceId", "entitlement.remove-ads");
+            Set(offer, "rewards", new List<ShopResourceConfig> { reward });
+            return offer;
+        }
+
+        private sealed class DeferredGateway : IShopPurchaseGateway
+        {
+            private UniTaskCompletionSource<ShopGatewayPurchaseResult> completion;
+            public int CallCount { get; private set; }
+            public UniTask<ShopGatewayPurchaseResult> PurchaseAsync(ShopGatewayPurchaseRequest request,
+                System.Threading.CancellationToken cancellationToken = default)
+            {
+                CallCount++;
+                completion = new UniTaskCompletionSource<ShopGatewayPurchaseResult>();
+                return completion.Task;
+            }
+            public void Complete(ShopGatewayPurchaseResult result) => completion.TrySetResult(result);
+        }
+
         private static ShopCatalogConfig CreateCatalog(ShopOfferConfig offer)
         {
             ShopCatalogConfig catalog = new();
@@ -97,14 +177,17 @@ namespace Dreamy.Shop.Tests
             field.SetValue(instance, value);
         }
 
-        private sealed class RecordingWallet : IResourceWallet
+        private sealed class RecordingWallet : IResourceWallet, IResourceBalanceProvider
         {
+            private readonly Dictionary<ResourceId, long> balances = new();
+            public long GetBalance(ResourceId id) => balances.TryGetValue(id, out long amount) ? amount : 0;
             public ResourceExchangeRequest LastRequest { get; private set; }
             public List<ResourceGrantRequest> GrantRequests { get; } = new();
 
             public bool TryGrant(ResourceGrantRequest request)
             {
                 GrantRequests.Add(request);
+                balances[request.Resource.ResourceId] = GetBalance(request.Resource.ResourceId) + request.Resource.Amount;
                 return true;
             }
 
@@ -117,10 +200,14 @@ namespace Dreamy.Shop.Tests
 
         private sealed class SuccessfulPurchaseGateway : IShopPurchaseGateway
         {
+            public int CallCount { get; private set; }
             public UniTask<ShopGatewayPurchaseResult> PurchaseAsync(
                 ShopGatewayPurchaseRequest request,
-                System.Threading.CancellationToken cancellationToken = default) =>
-                UniTask.FromResult(ShopGatewayPurchaseResult.Purchased("store-tx"));
+                System.Threading.CancellationToken cancellationToken = default)
+            {
+                CallCount++;
+                return UniTask.FromResult(ShopGatewayPurchaseResult.Purchased("store-tx"));
+            }
         }
     }
 }
