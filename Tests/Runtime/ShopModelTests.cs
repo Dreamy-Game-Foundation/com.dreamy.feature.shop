@@ -50,6 +50,16 @@ namespace Dreamy.Shop.Tests
         }
 
         [Test]
+        public void PurchaseAsync_MissingIapGateway_DoesNotGrantRewards()
+        {
+            var wallet = new RecordingWallet();
+            var model = new ShopModel(CreateCatalog(CreateIapOffer()), wallet);
+            var result = model.PurchaseAsync("iap-starter-pack").GetAwaiter().GetResult();
+            Assert.That(result.Status, Is.EqualTo(ShopPurchaseStatus.IapGatewayUnavailable));
+            Assert.That(wallet.GrantRequests.Count, Is.EqualTo(0));
+        }
+
+        [Test]
         public void PurchaseOnce_RejectsRepurchaseAndReadsOwnershipOnNewModel()
         {
             var catalog = CreateCatalog(CreateOnceOffer());

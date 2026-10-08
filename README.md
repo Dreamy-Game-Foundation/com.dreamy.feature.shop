@@ -32,7 +32,7 @@ Trong asmdef của game, thêm assembly chứa API trực tiếp sử dụng. Co
 | Runtime/Domain | ShopModel: exchange wallet, xác nhận purchase và tạo state/result. |
 | Runtime/Presentation | ShopPresenter: nối service với panel, xử lý mua/đóng. |
 | Runtime/Installation | ShopInstaller: đăng ký config, cài IShopService. |
-| Samples~/Shop Feature | Panel, item, ShopDemo, gateway mô phỏng, prefab và JSON. |
+| Samples~/Shop Feature | Panel, item, ShopFeatureInstaller, gateway adapter của host, prefab và JSON. |
 
 Luồng: GameInstaller → config/wallet/gateway → IShopService → ShopPresenter → ShopPanel. Game sở hữu service dùng chung và tích hợp store thật.
 
@@ -73,7 +73,7 @@ private async UniTask InstallShopAsync(
 }
 ```
 
-Truyền gateway thanh toán của game vào method. Khi thử sample, có thể dùng SimulatedShopPurchaseGateway từ namespace Dreamy.Feature.Shop.Integration; thay bằng adapter store thật khi làm production. Wallet ví dụ không seed tiền; thiết lập balance ban đầu theo game.
+Truyền gateway thanh toán của game vào method. ShopPurchaseGateway trong namespace Dreamy.Feature.Shop.Integration nhận callback thanh toán/receipt validation của host, không tự trả Purchased. Wallet ví dụ không seed tiền; thiết lập balance ban đầu theo game.
 
 Giữ đúng một Resources/DataConfig/shopCatalog.json. Đăng ký catalog trước InitializeAsync; cài Shop sau khi config và wallet sẵn sàng. Nếu root đã khởi tạo DataConfig, thêm RegisterConfig vào bước đăng ký chung thay vì load lại service.
 
@@ -102,20 +102,21 @@ Address là key tự đặt, không phải đường dẫn asset tự động. C
 
 Code UI cần namespace Dreamy.UI, Dreamy.Core, Dreamy.Shop và Dreamy.Feature.Shop.Integration. Reference Dreamy.UI.Runtime, Dreamy.Shop.Runtime, Dreamy.Core.Runtime, UniTask và Dreamy.Feature.Shop.Integration.Runtime trong asmdef.
 
-Trong method async UniTask:
+Đăng ký tại composition root sau khi cài service, cùng factory với các feature khác:
 
 ```csharp
-ShopPanel panel = await PanelManager.Instance.Create<ShopPanel>(
-    PanelAddress.Shop);
-
-var presenter = new ShopPresenter(
-    ServiceLocator.Get<IShopService>(), panel);
-panel.Destroyed += presenter.Dispose;
-presenter.Show();
-await panel.Show();
+ShopFeatureInstaller.Install(factory, shopService);
+PanelManager.Instance.PresenterFactory = factory;
 ```
 
-Host giữ một presenter cho mỗi panel instance. Nếu panel được cache, dùng lại presenter và gọi Show() khi mở lại; không tạo thêm presenter mỗi lần mở cùng instance. Khi dùng luồng host này, bỏ ShopDemo trên instance nếu có để tránh hai presenter xử lý cùng button.
+Sau đó mở ở bất kỳ caller nào:
+
+```csharp
+await PanelManager.Instance.Show<ShopPanel>(PanelAddress.Shop);
+// Hoặc await PanelManager.Instance.Transition<ShopPanel>(PanelAddress.Shop);
+```
+
+ShopPresenter implement IPanelPresenter (Show/Dispose) trong assembly không phụ thuộc UnityEngine `Dreamy.UI.Presentation`. Thêm reference này vào assembly dùng factory/presenter. UI host sở hữu một presenter cho mỗi lần mở, cleanup khi đóng/disable/destroy hoặc show lỗi; cached reopen tạo mới. Sample không còn ShopDemo và không cần caller tự quản lý presenter. Kết quả mua hàng về sau khi đóng UI không truy cập view; service vẫn sở hữu giao dịch/reward đang chạy.
 
 Scene cần Canvas có PanelManager và EventSystem. Nút Close được presenter xử lý; đóng từ code bằng:
 
@@ -131,3 +132,17 @@ Mở Window > Package Manager, chọn Dreamy Shop > Samples > Import. Unity ché
 
 - **Shop Feature**: nguồn `Samples~/Shop Feature`.
   Assembly `Dreamy.Feature.Shop.Integration.Runtime` reference Dreamy.Shop.Runtime, Dreamy.Economy.Runtime, Dreamy.Core.Runtime, Dreamy.UI.Runtime, Unity.TextMeshPro, UnityEngine.UI, UniTask.
+
+Kiểm tra trong sandbox bằng `python3 LocalPackages/com.dreamy.feature.settings/Tests~/validate-settings.py --shop`. Lệnh compile UI/Settings/Shop/template và chạy các regression presenter/model managed; không thay thế kiểm tra Unity lifecycle hoặc store trên device.
+
+## Production feature installer
+
+```csharp
+ShopFeatureInstaller.RegisterConfig(dataConfig); // Before dataConfig.InitializeAsync.
+// After config/save/wallet initialization:
+ShopFeatureInstaller.Install(factory, catalog, wallet, purchaseGateway, balanceProvider);
+```
+
+Install cài IShopService và đăng ký ShopPanel/ShopPresenter cùng một entry point. Overload Install(factory, shopService) dùng service đã được host cài. ShopInstaller runtime vẫn dành cho custom UI, không cần gọi riêng trong luồng tích hợp này.
+
+ShopPurchaseGateway nhận callback `Func<ShopGatewayPurchaseRequest, CancellationToken, UniTask<ShopGatewayPurchaseResult>>`. Callback gọi SDK/backend thật, xác thực giao dịch và trả transaction ID ổn định; adapter chuyển tiếp kết quả, không tạo giao dịch giả. Nếu chưa có gateway, IAP trả IapGatewayUnavailable; virtual-currency exchange vẫn hoạt động. GameInstaller không tự đăng ký gateway giả. Tên product/giá/catalog vẫn cần cấu hình theo game trước khi phát hành.

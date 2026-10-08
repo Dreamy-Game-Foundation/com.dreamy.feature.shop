@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Dreamy.Shop;
 using Dreamy.UI;
@@ -59,7 +60,7 @@ namespace Dreamy.Feature.Shop.Integration
             }
         }
 
-        public void Close() => Hide();
+        public void Close() => Hide().Forget();
 
         protected override void OnDestroy()
         {

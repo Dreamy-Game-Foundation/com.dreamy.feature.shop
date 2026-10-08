@@ -6,9 +6,9 @@ Sample của Dreamy Shop. Import từ Window > Package Manager > Dreamy Shop > S
 
 Giữ nguyên folder, .meta, asmdef và reference prefab khi chuyển vào project. Chỉ giữ một bản script/asmdef và một JSON cho mỗi key Resources/DataConfig. Bootstrap config/save/wallet/audio tại GameInstaller trước khi bật UI, theo [README package](../../README.md). Link tương đối này dùng trong source package; sau import, mở README package từ Package Manager.
 
-ShopPanel hiển thị offer, ShopOfferItem phát sự kiện mua, ShopDemo là ví dụ bind presenter. Gán container/item/button và giữ một shopCatalog.json. Cài config/wallet/gateway tại root, bind ShopPresenter trước animation. Thay SimulatedShopPurchaseGateway bằng gateway thanh toán thật.
+ShopPanel hiển thị offer, ShopOfferItem phát sự kiện mua, ShopFeatureInstaller đăng ký presenter vào factory chung. Gán container/item/button và giữ một shopCatalog.json. Cài config/wallet/gateway tại root, bind ShopPresenter trước animation. ShopPurchaseGateway nhận callback thanh toán/validation từ backend hoặc SDK của host.
 
-Assembly Dreamy.Feature.Shop.Integration.Runtime reference Dreamy.Shop.Runtime, Dreamy.Economy.Runtime, Dreamy.Core.Runtime, Dreamy.UI.Runtime, Unity.TextMeshPro, UnityEngine.UI, UniTask.
+Assembly Dreamy.Feature.Shop.Integration.Runtime reference Dreamy.Shop.Runtime, Dreamy.Economy.Runtime, Dreamy.Core.Runtime, Dreamy.UI.Runtime, Dreamy.UI.Presentation, Unity.TextMeshPro, UnityEngine.UI, UniTask.
 
 ## Icon offer từ Sprite Atlas
 
@@ -71,7 +71,7 @@ Build Addressables content cho target trước khi test player. Đóng panel kh�
 Mở Window > Package Manager, chọn Dreamy Shop > Samples > Import. Unity chép vào Assets/Samples/Dreamy Shop/0.1.1/. Chuyển cả folder nếu tùy biến, giữ .meta và reference prefab; không giữ bản script/asmdef hoặc Resources document trùng.
 
 - **Shop Feature**: nguồn `Samples~/Shop Feature`.
-  Assembly `Dreamy.Feature.Shop.Integration.Runtime` reference Dreamy.Shop.Runtime, Dreamy.Economy.Runtime, Dreamy.Core.Runtime, Dreamy.UI.Runtime, Unity.TextMeshPro, UnityEngine.UI, UniTask.
+  Assembly `Dreamy.Feature.Shop.Integration.Runtime` reference Dreamy.Shop.Runtime, Dreamy.Economy.Runtime, Dreamy.Core.Runtime, Dreamy.UI.Runtime, Dreamy.UI.Presentation, Unity.TextMeshPro, UnityEngine.UI, UniTask.
 
 ## No Ads và điểm tích hợp SDK production
 
@@ -91,7 +91,7 @@ noAdsBinding = new EntitlementEffectBinding(
 
 GameInstaller trong sandbox dùng ApplyNoAdsDemo để log, chưa gọi SDK thật. Thay callback đó khi SDK được cài. Binding bắt lỗi callback và gửi đến reportError; callback báo lỗi phải không throw. Gọi Synchronize để thử lại nếu SDK lỗi tạm thời; binding không tự retry theo timer. Callback effect cần idempotent. Đây là effect một chiều khi đã sở hữu, chưa xử lý thu hồi quyền hoặc đổi tài khoản; host phải tạo binding mới theo owner/SDK session mới.
 
-Có thể tạo thêm binding cho entitlement khác mà không sửa gateway. Production vẫn cần adapter IShopPurchaseGateway cho store thật, xử lý non-consumable và restore quyền sở hữu vào wallet. Sample chặn mua lại offer purchaseOnce theo wallet, chưa triển khai restore và còn dùng SimulatedShopPurchaseGateway; giá/product ID là dữ liệu demo.
+Có thể tạo thêm binding cho entitlement khác mà không sửa gateway. Production vẫn cần adapter IShopPurchaseGateway cho store thật, xử lý non-consumable và restore quyền sở hữu vào wallet. Sample chặn mua lại offer purchaseOnce theo wallet, chưa triển khai restore và cần host cung cấp callback thanh toán/validation thật; giá/product ID là dữ liệu demo.
 
 ## Ví dụ nhiều gói entitlement IAP
 
@@ -140,3 +140,27 @@ Host phải cung cấp IResourceBalanceProvider (truyền vào model/installer h
 ## Reward text
 
 `rewardText` trong mỗi offer là nhãn hiển thị ngắn, ví dụ `"rewardText": "1,000 Gold"`, `"VIP"` hoặc `"Premium Pass"`. ShopOfferItem chỉ bind Offer.RewardText, không suy ra nhãn từ resource ID. Khi chỉnh reward amount, cập nhật rewardText tương ứng. Field này tùy chọn cho catalog cũ; thiếu field thì nhãn trống. Resource ID, amount và ownershipResourceId vẫn là dữ liệu cấp quyền/reward, độc lập với text hiển thị.
+
+## Presenter factory
+
+Sau khi cài IShopService, composition root gọi:
+
+```csharp
+ShopFeatureInstaller.Install(factory, shopService);
+```
+
+Dùng cùng factory với Settings rồi gắn vào PanelManager. Gọi `PanelManager.Show<ShopPanel>(address)` hoặc `Transition<ShopPanel>(address)`; host chung tạo/show presenter và dispose khi đóng, disable hoặc destroy. Mở lại tạo presenter mới. ShopDemo đã được bỏ để tránh hai presenter cùng bind view.
+
+ShopPresenter implement IPanelPresenter trong Dreamy.UI.Presentation; runtime vẫn không reference UnityEngine. Presenter chặn double click và bỏ qua kết quả giao dịch của lần mở cũ sau Dispose. Đóng UI không hủy giao dịch đang chạy: service/gateway tiếp tục sở hữu thanh toán và grant reward.
+
+## Production feature installer
+
+```csharp
+ShopFeatureInstaller.RegisterConfig(dataConfig); // Before dataConfig.InitializeAsync.
+// After config/save/wallet initialization:
+ShopFeatureInstaller.Install(factory, catalog, wallet, purchaseGateway, balanceProvider);
+```
+
+Install cài IShopService và đăng ký ShopPanel/ShopPresenter cùng một entry point. Overload Install(factory, shopService) dùng service đã được host cài. ShopInstaller runtime vẫn dành cho custom UI, không cần gọi riêng trong luồng tích hợp này.
+
+ShopPurchaseGateway nhận callback `Func<ShopGatewayPurchaseRequest, CancellationToken, UniTask<ShopGatewayPurchaseResult>>`. Callback gọi SDK/backend thật, xác thực giao dịch và trả transaction ID ổn định; adapter chuyển tiếp kết quả, không tạo giao dịch giả. Nếu chưa có gateway, IAP trả IapGatewayUnavailable; virtual-currency exchange vẫn hoạt động. GameInstaller không tự đăng ký gateway giả. Tên product/giá/catalog vẫn cần cấu hình theo game trước khi phát hành.

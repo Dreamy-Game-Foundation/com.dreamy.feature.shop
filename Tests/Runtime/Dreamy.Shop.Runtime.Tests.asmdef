@@ -1,8 +1,18 @@
 {
   "name": "Dreamy.Shop.Runtime.Tests",
   "rootNamespace": "Dreamy.Shop.Tests",
-  "references": ["Dreamy.Shop.Runtime", "Dreamy.Economy.Runtime", "Dreamy.DataConfig.Runtime", "UniTask", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
-  "includePlatforms": ["Editor"],
+  "references": [
+    "Dreamy.Shop.Runtime",
+    "Dreamy.Economy.Runtime",
+    "Dreamy.DataConfig.Runtime",
+    "UniTask",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "Dreamy.UI.Presentation"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,
