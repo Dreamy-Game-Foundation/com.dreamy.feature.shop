@@ -3,6 +3,7 @@
     "rootNamespace": "Dreamy.Feature.Shop.Integration",
     "references": [
         "Dreamy.Shop.Runtime",
+        "Dreamy.DataConfig.Runtime",
         "Dreamy.Economy.Runtime",
         "Dreamy.Core.Runtime",
         "Dreamy.UI.Runtime",
