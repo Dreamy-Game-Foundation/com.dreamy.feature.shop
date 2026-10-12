@@ -2,6 +2,8 @@ using System;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Dreamy.Shop;
+using Dreamy.Economy.UI;
+using Dreamy.Feedback;
 using Dreamy.UI;
 using TMPro;
 using UnityEngine;
@@ -18,6 +20,11 @@ namespace Dreamy.Feature.Shop.Integration
         [SerializeField] private ShopOfferItem offerItemPrefab;
         [SerializeField] private SpriteAtlas iconAtlas;
         [SerializeField] private Sprite fallbackIcon;
+        [Header("Confirmed purchase feedback")]
+        [SerializeField] private ResourceUIHolder[] rewardHolders = Array.Empty<ResourceUIHolder>();
+        [SerializeField] private FeedbackPlayer rewardFeedback;
+        private Transform rewardSource;
+        private int presentationVersion;
         private readonly List<ShopOfferItem> items = new();
         // GetSprite creates clones. This panel owns and destroys them.
         private readonly Dictionary<string, Sprite> icons = new(StringComparer.Ordinal);
@@ -27,6 +34,34 @@ namespace Dreamy.Feature.Shop.Integration
         public event Action CloseRequested;
         public event Action Destroyed;
 
+        public void BindFeedbackHost(FeedbackHost host)
+        {
+            if (rewardFeedback != null && host != null) rewardFeedback.BindHost(host);
+        }
+
+        public async UniTask PresentPurchaseAsync(ShopPurchaseResult result)
+        {
+            if (!result.IsSuccess || result.Offer == null) return;
+            if (result.Offer.PurchaseKind == ShopPurchaseKind.VirtualCurrency)
+                foreach (var holder in rewardHolders)
+                    if (holder != null && holder.ResourceId == result.Offer.Cost.ResourceId)
+                        holder.RefreshBalance();
+            if (rewardFeedback == null) return;
+            int version = presentationVersion;
+            statusText.text = "Collecting reward...";
+            foreach (var reward in result.Offer.Rewards)
+            {
+                foreach (var holder in rewardHolders)
+                {
+                    if (holder == null || holder.ResourceId != reward.Resource.ResourceId) continue;
+                    var handle = rewardFeedback.PlayBetween(rewardSource, holder.IconTarget, reward.Resource.Amount, holder.Icon);
+                    await handle.WaitAsync();
+                    if (version != presentationVersion || !isActiveAndEnabled || handle.Status == FeedbackStatus.Stopped) return;
+                    holder.RefreshBalance();
+                }
+            }
+        }
+
         private void OnEnable()
         {
             closeButton.onClick.AddListener(RequestClose);
@@ -34,7 +69,9 @@ namespace Dreamy.Feature.Shop.Integration
         protected override void OnDisable()
         {
             closeButton.onClick.RemoveListener(RequestClose);
+            presentationVersion++;
             base.OnDisable();
+            rewardFeedback?.StopLast();
         }
 
         public void Render(ShopViewState state)
@@ -54,6 +91,9 @@ namespace Dreamy.Feature.Shop.Integration
 
         public void SetPurchaseInteractable(bool interactable)
         {
+            if (interactable)
+                foreach (var holder in rewardHolders)
+                    if (holder != null) holder.RefreshBalance();
             foreach (ShopOfferItem item in items)
             {
                 item.SetPurchaseInteractable(interactable);
@@ -95,7 +135,11 @@ namespace Dreamy.Feature.Shop.Integration
             }
         }
 
-        private void RequestPurchase(string offerId) => PurchaseRequested?.Invoke(offerId);
+        private void RequestPurchase(string offerId)
+        {
+            rewardSource = items.Find(item => item.OfferId == offerId)?.RewardSource;
+            PurchaseRequested?.Invoke(offerId);
+        }
         private void RequestClose() => CloseRequested?.Invoke();
 
         private Sprite ResolveIcon(string key)

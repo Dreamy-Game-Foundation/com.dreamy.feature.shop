@@ -19,6 +19,8 @@ namespace Dreamy.Feature.Shop.Integration
         private bool purchaseEnabled = true;
 
         public event Action<string> PurchaseRequested;
+        public string OfferId => offerId;
+        public Transform RewardSource => iconImage != null ? iconImage.transform : transform;
 
         private void OnEnable() => purchaseButton.onClick.AddListener(RequestPurchase);
         private void OnDisable() => purchaseButton.onClick.RemoveListener(RequestPurchase);

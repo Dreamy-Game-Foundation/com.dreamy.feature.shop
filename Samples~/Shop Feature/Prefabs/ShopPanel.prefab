@@ -671,6 +671,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1316269333568228854, guid: 58d7c1a38f4e4d83920eff2d9a6de08a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6871799070329584564}
+    - targetCorrespondingSourceObject: {fileID: 1316269333568228854, guid: 58d7c1a38f4e4d83920eff2d9a6de08a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7335696158871971907}
   m_SourcePrefab: {fileID: 100100000, guid: 58d7c1a38f4e4d83920eff2d9a6de08a, type: 3}
 --- !u!1 &1913687934710241997 stripped
 GameObject:
@@ -697,6 +700,10 @@ MonoBehaviour:
   offerItemPrefab: {fileID: 5563508889273868629, guid: b18a699ac0ef35d43a639269ca3e6245, type: 3}
   iconAtlas: {fileID: 100100200, guid: b3ab08076877e4d48ad37af178afd723, type: 3}
   fallbackIcon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  rewardHolders:
+  - {fileID: 1818290853694849259}
+  - {fileID: 8185791925058897049}
+  rewardFeedback: {fileID: 7335696158871971907}
 --- !u!114 &6871799070329584564
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -721,6 +728,69 @@ MonoBehaviour:
     cooldownRange: {x: 0.7, y: 1.8}
     durationRange: {x: 0.35, y: 0.8}
     rotationRange: {x: 25, y: 65}
+--- !u!114 &7335696158871971907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1913687934710241997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcd49c7c5a59061b1ad6f798b97ea812, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Dreamy.Feedback.Runtime::Dreamy.Feedback.FeedbackPlayer
+  host: {fileID: 0}
+  asset: {fileID: 11400000, guid: d3201f30b1eec255f85bec6cc43b7ae7, type: 2}
+  customize: 0
+  runtimeSettings:
+    Fields: 0
+    Duration: 0
+    Color: {r: 0, g: 0, b: 0, a: 0}
+    Count: 0
+    Strength: 0
+    Text: 
+    Icon: {fileID: 0}
+    Prefab: {fileID: 0}
+    IconOptions:
+      Icon: {fileID: 0}
+      StartPosition: {x: 0, y: 0, z: 0}
+      EndPosition: {x: 0, y: 0, z: 0}
+      Count: 0
+      Duration: 0
+      Spread: 0
+      Stagger: 0
+      ArcHeight: 0
+      Spin: 0
+      Size: {x: 0, y: 0}
+      Style: 0
+      Ease: 0
+      UnscaledTime: 0
+    Haptic: 0
+    FlashOptions:
+      Color: {r: 0, g: 0, b: 0, a: 0}
+      UnscaledTime: 0
+      FadeInDuration: 0
+      HoldDuration: 0
+      FadeOutDuration: 0
+      MaxAlpha: 0
+    PunchOptions:
+      Duration: 0
+      Strength: 0
+      Vibrato: 0
+      UnscaledTime: 0
+    ShakeOptions:
+      Duration: 0
+      UnscaledTime: 0
+      Amplitude: 0
+      Frequency: 0
+  bindings: []
+  useRuntimeCount: 0
+  iconCount: 8
+  iconSource: {fileID: 0}
+  target: {fileID: 0}
+  icon: {fileID: 0}
+  amount: 1
 --- !u!224 &5686162882325269481 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5054118461245725906, guid: 58d7c1a38f4e4d83920eff2d9a6de08a, type: 3}
@@ -755,6 +825,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5686162882325269481}
     m_Modifications:
+    - target: {fileID: 1710615310721465588, guid: e72603487e1846788e844014acddf579, type: 3}
+      propertyPath: autoRefresh
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4767131838053282410, guid: e72603487e1846788e844014acddf579, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -904,6 +978,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e72603487e1846788e844014acddf579, type: 3}
+--- !u!114 &1818290853694849259 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1710615310721465588, guid: e72603487e1846788e844014acddf579, type: 3}
+  m_PrefabInstance: {fileID: 1046680549432196127}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00ab0d9fba2826648b2f62e6b11e3c32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Dreamy.Economy.UI.Runtime::Dreamy.Economy.UI.ResourceUIHolder
 --- !u!224 &8244014448305423996 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 9002151518397905507, guid: e72603487e1846788e844014acddf579, type: 3}
@@ -917,6 +1002,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5686162882325269481}
     m_Modifications:
+    - target: {fileID: 574362686460273451, guid: c81d639b62734a13981155bbce9ef683, type: 3}
+      propertyPath: autoRefresh
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4732374753574467666, guid: c81d639b62734a13981155bbce9ef683, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1071,3 +1160,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7830573664029910460, guid: c81d639b62734a13981155bbce9ef683, type: 3}
   m_PrefabInstance: {fileID: 8530184601498396594}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8185791925058897049 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 574362686460273451, guid: c81d639b62734a13981155bbce9ef683, type: 3}
+  m_PrefabInstance: {fileID: 8530184601498396594}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00ab0d9fba2826648b2f62e6b11e3c32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Dreamy.Economy.UI.Runtime::Dreamy.Economy.UI.ResourceUIHolder

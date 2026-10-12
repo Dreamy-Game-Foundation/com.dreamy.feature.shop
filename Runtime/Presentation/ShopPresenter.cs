@@ -8,14 +8,16 @@ namespace Dreamy.Shop
     {
         private readonly IShopService service;
         private readonly IShopView view;
+        private readonly Func<ShopPurchaseResult, UniTask> presentPurchase;
         private bool isBound;
         private bool isPurchasing;
         private int generation;
 
-        public ShopPresenter(IShopService service, IShopView view)
+        public ShopPresenter(IShopService service, IShopView view, Func<ShopPurchaseResult, UniTask> presentPurchase = null)
         {
             this.service = service ?? throw new ArgumentNullException(nameof(service));
             this.view = view ?? throw new ArgumentNullException(nameof(view));
+            this.presentPurchase = presentPurchase;
         }
 
         public void Show()
@@ -57,6 +59,9 @@ namespace Dreamy.Shop
             try
             {
                 ShopPurchaseResult result = await service.PurchaseAsync(offerId);
+                if (!isBound || generation != purchaseGeneration) return;
+                if (result.IsSuccess && presentPurchase != null)
+                    await presentPurchase(result);
                 if (!isBound || generation != purchaseGeneration) return;
                 view.ShowPurchaseResult(result);
                 view.Render(service.GetState());

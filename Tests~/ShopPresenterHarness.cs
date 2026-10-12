@@ -12,12 +12,13 @@ internal static class ShopPresenterHarness
     {
         public int Calls;
         public UniTaskCompletionSource<ShopPurchaseResult> Pending;
+        public ShopPurchaseResult Result = ShopPurchaseResult.OfferNotFound();
         public ShopViewState GetState() => new(Array.Empty<ShopOfferViewState>());
         public ShopPurchaseResult Purchase(string id) => ShopPurchaseResult.OfferNotFound();
         public UniTask<ShopPurchaseResult> PurchaseAsync(string id, CancellationToken token = default)
         {
             Calls++;
-            return Pending?.Task ?? UniTask.FromResult(ShopPurchaseResult.OfferNotFound());
+            return Pending?.Task ?? UniTask.FromResult(Result);
         }
     }
     private sealed class View : IShopView
@@ -93,6 +94,33 @@ internal static class ShopPresenterHarness
         view.Buy();
         Check(service.Calls == 5 && view.Interactable, "reopened presenter can purchase again");
         reused.Dispose();
+
+        service.Result = ShopPurchaseResult.Purchased(null);
+        var effect = new UniTaskCompletionSource();
+        var withFeedback = new ShopPresenter(service, view, _ => effect.Task);
+        withFeedback.Show();
+        results = view.Results;
+        int calls = service.Calls;
+        view.Buy(); view.Buy();
+        Check(service.Calls == calls + 1 && !view.Interactable && view.Results == results,
+            "feedback wait holds purchase lock and blocks repeated clicks");
+        effect.TrySetResult();
+        Check(view.Interactable && view.Results == results + 1,
+            "feedback completion renders result and releases purchase lock");
+        withFeedback.Dispose();
+        effect = new UniTaskCompletionSource();
+        withFeedback.Show(); view.Buy(); withFeedback.Dispose(); withFeedback.Show();
+        writes = view.Writes; results = view.Results;
+        effect.TrySetResult();
+        Check(view.Writes == writes && view.Results == results,
+            "old feedback completion cannot update a reopened presenter");
+        withFeedback.Dispose();
+        bool effectCalled = false;
+        service.Result = ShopPurchaseResult.OfferNotFound();
+        var failedPurchase = new ShopPresenter(service, view, _ => { effectCalled = true; return UniTask.CompletedTask; });
+        failedPurchase.Show(); view.Buy();
+        Check(!effectCalled && view.Interactable, "failed purchase skips feedback and releases purchase lock");
+        failedPurchase.Dispose();
 
         var fixtureType = Assembly.GetExecutingAssembly().GetType("Dreamy.Shop.Tests.ShopModelTests");
         var fixture = Activator.CreateInstance(fixtureType);
