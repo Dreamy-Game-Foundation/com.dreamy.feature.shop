@@ -6,8 +6,6 @@
     "Dreamy.Economy.Runtime",
     "Dreamy.DataConfig.Runtime",
     "UniTask",
-    "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner",
     "Dreamy.UI.Presentation"
   ],
   "includePlatforms": [
@@ -17,8 +15,13 @@
   "allowUnsafeCode": false,
   "overrideReferences": false,
   "precompiledReferences": [],
-  "autoReferenced": true,
-  "defineConstraints": [],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
   "versionDefines": [],
-  "noEngineReferences": false
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
 }
