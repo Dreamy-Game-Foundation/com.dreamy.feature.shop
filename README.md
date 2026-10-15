@@ -10,8 +10,8 @@ Dependency trực tiếp theo package.json:
 
 - `com.dreamy.core` (1.1.2)
 - `com.dreamy.dataconfig` (0.2.0)
-- `com.dreamy.feature.economy` (0.2.0)
-- `com.dreamy.feature` (0.1.0)
+- `com.dreamy.feature.economy` (0.3.0)
+- `com.dreamy.feature` (0.2.0)
 - `com.dreamy.ui` (0.2.0)
 - `com.cysharp.unitask` (2.5.10)
 
@@ -135,11 +135,11 @@ Mở Window > Package Manager, chọn Dreamy Shop > Samples > Import. Unity ché
 
 Kiểm tra trong sandbox bằng `python3 LocalPackages/com.dreamy.feature.settings/Tests~/validate-settings.py --shop`. Lệnh compile UI/Settings/Shop/template và chạy các regression presenter/model managed; không thay thế kiểm tra Unity lifecycle hoặc store trên device.
 
-## Production feature installer
+## Installer tích hợp vào game
 
 ```csharp
-ShopFeatureInstaller.RegisterConfig(dataConfig); // Before dataConfig.InitializeAsync.
-// After config/save/wallet initialization:
+ShopFeatureInstaller.RegisterConfig(dataConfig); // Trước dataConfig.InitializeAsync.
+// Sau khi config/save/wallet đã khởi tạo:
 ShopFeatureInstaller.Install(factory, catalog, wallet, purchaseGateway, balanceProvider);
 ```
 

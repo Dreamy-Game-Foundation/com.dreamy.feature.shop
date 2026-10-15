@@ -171,11 +171,11 @@ Dùng cùng factory với Settings rồi gắn vào PanelManager. Gọi `PanelMa
 
 ShopPresenter implement IPanelPresenter trong Dreamy.UI.Presentation; runtime vẫn không reference UnityEngine. Presenter chặn double click và bỏ qua kết quả giao dịch của lần mở cũ sau Dispose. Đóng UI không hủy giao dịch đang chạy: service/gateway tiếp tục sở hữu thanh toán và grant reward.
 
-## Production feature installer
+## Installer tích hợp vào game
 
 ```csharp
-ShopFeatureInstaller.RegisterConfig(dataConfig); // Before dataConfig.InitializeAsync.
-// After config/save/wallet initialization:
+ShopFeatureInstaller.RegisterConfig(dataConfig); // Trước dataConfig.InitializeAsync.
+// Sau khi config/save/wallet đã khởi tạo:
 ShopFeatureInstaller.Install(factory, catalog, wallet, purchaseGateway, balanceProvider);
 ```
 
