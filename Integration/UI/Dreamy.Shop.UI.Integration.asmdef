@@ -1,0 +1,11 @@
+{
+  "name": "Dreamy.Shop.UI.Integration",
+  "rootNamespace": "Dreamy.Shop.UI",
+  "references": [
+    "Dreamy.Shop.Runtime",
+    "Dreamy.Economy.Runtime",
+    "Dreamy.Economy.UI.Integration",
+    "UniTask"
+  ],
+  "noEngineReferences": true
+}

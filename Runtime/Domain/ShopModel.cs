@@ -125,6 +125,15 @@ namespace Dreamy.Shop
                 $"{catalog.CatalogId}:{offer.Id}:{Guid.NewGuid():N}",
                 offer.Cost,
                 rewards);
+            if (wallet is IResourceTransactionWallet transactions)
+            {
+                var result = transactions.Exchange(new ResourceTransactionRequest(request.TransactionId,
+                    new[] { request.Cost }, rewards, offer.Id));
+                if (result.IsSuccess) return ShopPurchaseResult.Purchased(offer);
+                return result.Status == ResourceTransactionStatus.InsufficientResources
+                    ? ShopPurchaseResult.InsufficientResources(offer, result)
+                    : ShopPurchaseResult.TransactionFailed(offer, result);
+            }
             return wallet.TryExchange(request)
                 ? ShopPurchaseResult.Purchased(offer)
                 : ShopPurchaseResult.ExchangeFailed(offer);

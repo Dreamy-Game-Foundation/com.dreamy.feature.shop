@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Dreamy.Shop;
@@ -84,6 +85,27 @@ namespace Dreamy.Feature.Shop.Integration
                 items[index].Render(state.Offers[index]);
                 items[index].SetIcon(ResolveIcon(state.Offers[index].Offer.IconKey));
             }
+        }
+
+        public async UniTask<bool> FocusOfferAsync(string offerId, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, token);
+            token.ThrowIfCancellationRequested();
+            Canvas.ForceUpdateCanvases();
+            var item = items.Find(candidate => candidate.OfferId == offerId);
+            if (item == null) return false;
+            var scroll = offerContainer.GetComponentInParent<ScrollRect>();
+            if (scroll != null && scroll.content != null && scroll.viewport != null)
+            {
+                var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.content, item.transform);
+                float height = scroll.content.rect.height - scroll.viewport.rect.height;
+                if (height > 0)
+                    scroll.verticalNormalizedPosition = 1f - Mathf.Clamp01(-bounds.center.y / height);
+            }
+            item.GetComponent<Selectable>()?.Select();
+            statusText.text = "Choose a resource pack";
+            return true;
         }
 
         public void ShowPurchaseResult(ShopPurchaseResult result) =>

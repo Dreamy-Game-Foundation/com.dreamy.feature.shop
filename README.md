@@ -1,5 +1,7 @@
 # Dreamy Shop
 
+0.2.0 adds typed shortage results, optional presenter recovery with cancellation, and `Dreamy.Shop.UI.Integration` resource navigation. See Economy `Documentation~/resource-recovery.md` for composition/migration. The gateway opens/focuses a destination; it never purchases or grants.
+
 Package thuộc Dreamy Game Studio. Hướng dẫn dưới đây mô tả cấu trúc, cách cài vào project và tích hợp ở root/scene.
 
 ## Cài package
@@ -10,10 +12,11 @@ Dependency trực tiếp theo package.json:
 
 - `com.dreamy.core` (1.1.2)
 - `com.dreamy.dataconfig` (0.2.0)
-- `com.dreamy.feature.economy` (0.3.0)
+- `com.dreamy.feature.economy` (0.5.0)
 - `com.dreamy.feature` (0.2.0)
-- `com.dreamy.ui` (0.2.0)
+- `com.dreamy.ui` (1.0.5)
 - `com.cysharp.unitask` (2.5.10)
+- `com.unity.nuget.newtonsoft-json` (3.2.1)
 
 ## Cấu trúc và asmdef
 

@@ -1,0 +1,28 @@
+{
+  "name": "Dreamy.Shop.Recovery.Tests",
+  "references": [
+    "Dreamy.Economy.Runtime",
+    "Dreamy.Datasave.Runtime",
+    "Dreamy.Economy.UI.Integration",
+    "Dreamy.Shop.Runtime",
+    "Dreamy.Shop.UI.Integration",
+    "Dreamy.DataConfig.Runtime",
+    "UniTask",
+    "Dreamy.UI.Presentation"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll",
+    "Newtonsoft.Json.dll"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "autoReferenced": false
+}

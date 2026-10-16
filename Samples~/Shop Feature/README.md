@@ -182,3 +182,8 @@ ShopFeatureInstaller.Install(factory, catalog, wallet, purchaseGateway, balanceP
 Install cài IShopService và đăng ký ShopPanel/ShopPresenter cùng một entry point. Overload Install(factory, shopService) dùng service đã được host cài. ShopInstaller runtime vẫn dành cho custom UI, không cần gọi riêng trong luồng tích hợp này.
 
 ShopPurchaseGateway nhận callback `Func<ShopGatewayPurchaseRequest, CancellationToken, UniTask<ShopGatewayPurchaseResult>>`. Callback gọi SDK/backend thật, xác thực giao dịch và trả transaction ID ổn định; adapter chuyển tiếp kết quả, không tạo giao dịch giả. Nếu chưa có gateway, IAP trả IapGatewayUnavailable; virtual-currency exchange vẫn hoạt động. GameInstaller không tự đăng ký gateway giả. Tên product/giá/catalog vẫn cần cấu hình theo game trước khi phát hành.
+
+
+### Not-enough resources popup
+
+Supply `recoverResources` to `ShopFeatureInstaller.Install` to opt into recovery. In this sandbox GameInstaller does so using ResourceRecoveryPanelPresentation and the NotEnoughResourcesPanel variant assigned in BootstrapScene. The prefab comes from Economy's Resource Recovery sample and inherits Dreamy Feature BaseFeaturePanel; it uses the shared PanelManager Popup layer, SafeArea, Back and tweens. Keep the same wallet/balance source for Shop and recovery. Acquisition focuses a matching resource offer; it never buys or retries the failed action automatically.
