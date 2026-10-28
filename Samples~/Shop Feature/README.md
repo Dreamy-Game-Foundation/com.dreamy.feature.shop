@@ -4,10 +4,15 @@
 
 Sandbox ShopPanel đã gắn CoinHolder/GemHolder của Economy và FeedbackPlayer dùng
 RewardIcons asset. GameInstaller truyền FeedbackHost đang chạy vào ShopFeatureInstaller.
-Hai holder trong Shop tắt Auto Refresh. Sau giao dịch thành công, HUD của resource
-bị tiêu cập nhật ngay; HUD của từng reward cập nhật sau effect tương ứng.
+Giữ Auto Refresh bật trên hai holder. Trước purchase, ShopPresenter gọi optional
+IShopPurchasePresentation để ShopPanel tạo DeferRefresh trên holder nhận reward.
+HUD chỉ dùng thanh toán cập nhật ngay; holder nhận reward chờ toàn bộ effect rồi
+đọc số dư mới nhất. Holder Home riêng vẫn tự đồng bộ.
 ShopPresenter chờ callback effect rồi cập nhật view và mở lại nút mua. Mở lại panel đọc wallet.
 Wallet vẫn commit/save ngay khi mua thành công; animation không grant tài nguyên.
+Scope và icon flight được cleanup ngay khi pre-hide, disable, destroy hoặc presenter
+dispose; không chờ task kết thúc mới release. Pre-hide cũng hủy purchase lifetime,
+kể cả navigation chỉ chạy tween. Cần Economy 0.8.0 và Shop 0.3.0.
 
 Play scene có GameInstaller, mở ShopPanel sample và mua virtual-currency offer
 khi ví đủ tiền. Có thể cấp Coin thử qua Economy demo → Grant (100 Coin),
@@ -15,7 +20,7 @@ rồi mua offer đổi Coin sang Gem để có đủ tiền thử các gói Gold
 purchase gateway thật. Đóng/mở panel giữa lúc bay
 để kiểm tra số dư được giữ. Các field rewardHolders/rewardFeedback có thể để trống
 nếu không dùng hiệu ứng. Project khác cần import Resource Holders và Basic Feedback,
-gán holder/player trong Inspector, tắt Auto Refresh trên holder của Shop và truyền
+gán holder/player trong Inspector, bật Auto Refresh trên holder của Shop và truyền
 FeedbackHost vào Install.
 
 Sample của Dreamy Shop. Import từ Window > Package Manager > Dreamy Shop > Samples > Import. Unity chép nội dung vào Assets/Samples/Dreamy Shop/0.1.1/Shop Feature/.

@@ -12,7 +12,7 @@ Dependency trực tiếp theo package.json:
 
 - `com.dreamy.core` (1.1.2)
 - `com.dreamy.dataconfig` (0.2.0)
-- `com.dreamy.feature.economy` (0.5.0)
+- `com.dreamy.feature.economy` (0.8.0)
 - `com.dreamy.feature` (0.2.0)
 - `com.dreamy.ui` (1.0.5)
 - `com.cysharp.unitask` (2.5.10)
@@ -149,3 +149,25 @@ ShopFeatureInstaller.Install(factory, catalog, wallet, purchaseGateway, balanceP
 Install cài IShopService và đăng ký ShopPanel/ShopPresenter cùng một entry point. Overload Install(factory, shopService) dùng service đã được host cài. ShopInstaller runtime vẫn dành cho custom UI, không cần gọi riêng trong luồng tích hợp này.
 
 ShopPurchaseGateway nhận callback `Func<ShopGatewayPurchaseRequest, CancellationToken, UniTask<ShopGatewayPurchaseResult>>`. Callback gọi SDK/backend thật, xác thực giao dịch và trả transaction ID ổn định; adapter chuyển tiếp kết quả, không tạo giao dịch giả. Nếu chưa có gateway, IAP trả IapGatewayUnavailable; virtual-currency exchange vẫn hoạt động. GameInstaller không tự đăng ký gateway giả. Tên product/giá/catalog vẫn cần cấu hình theo game trước khi phát hành.
+
+## Purchase presentation scopes (0.3.0)
+
+A view may implement `IShopPurchasePresentation.BeginPurchasePresentation(offerId, token)`.
+ShopPresenter calls it before `IShopService.PurchaseAsync`, retains the returned
+idempotent IDisposable until purchase/presentation completes, and releases it on
+failure, cancellation or presenter disposal. Failed purchases release before shortage
+recovery. Existing IShopView implementations require no changes. This contract has
+no Unity UI, Economy UI or Feedback dependency.
+
+The sample ShopPanel uses Economy 0.8.0 DeferRefresh on holders matching the
+selected offer rewards. Keep Auto Refresh enabled: cost-only holders update immediately,
+reward holders wait for all flights, and independent Home holders keep refreshing.
+An offer that both spends and rewards the same currency holds that holder until
+presentation ends; it displays the final net wallet balance. Scope release reads the
+latest wallet state rather than summing reward amounts. The sample handles pre-hide,
+disable, destroy and presenter disposal by cancelling waits, stopping the owned
+flight and releasing holds immediately. It never grants or rolls back rewards.
+
+Direct custom integrations must acquire the scope before mutation; calling only
+PresentPurchaseAsync after success cannot undo a balance already displayed. Update
+previously imported samples alongside package upgrades; this sandbox import is updated.

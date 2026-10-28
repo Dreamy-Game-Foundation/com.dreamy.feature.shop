@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — 0.3.0 candidate
+
+- Add optional engine-independent `IShopPurchasePresentation`. ShopPresenter acquires its scope before purchase can mutate wallet and releases on completion, failure, cancellation or disposal; failed purchases release before shortage recovery. Legacy IShopView implementations remain compatible.
+- Shop sample defers only reward holders before purchase, waits for icon flights and releases the latest wallet balance afterward. Cost-only holders and independent Home holders continue auto refresh.
+- Own cancellation, flight stop and hold cleanup on pre-hide (including tween-only navigation), disable, destroy and presenter disposal. Keep sample source and sandbox import synchronized.
+- Require Economy 0.8.0 for holder scopes. Add presenter lifecycle tests and real-icon-flight regressions. No serialized field or prefab GUID changes.
+
 ## [0.2.0] - 2026-10-16
 
 - Consolidate the current implementation for a local source release; clean UI consumer checks passed; native/mobile gates and the full-project UI test failures remain open.

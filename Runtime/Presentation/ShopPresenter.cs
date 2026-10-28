@@ -12,6 +12,7 @@ namespace Dreamy.Shop
         private readonly Func<ShopPurchaseResult, UniTask> presentPurchase;
         private readonly Func<ShopPurchaseResult, CancellationToken, UniTask> recoverResources;
         private CancellationTokenSource lifetime;
+        private IDisposable activePresentation;
         private bool isBound;
         private bool isPurchasing;
         private int generation;
@@ -39,11 +40,16 @@ namespace Dreamy.Shop
             isBound = false;
             isPurchasing = false;
             generation++;
-            lifetime?.Cancel();
-            lifetime?.Dispose();
-            lifetime = null;
             view.PurchaseRequested -= Purchase;
             view.CloseRequested -= Close;
+            var cancellation = lifetime;
+            lifetime = null;
+            try { cancellation?.Cancel(); }
+            finally
+            {
+                try { ReleasePresentation(activePresentation); }
+                finally { cancellation?.Dispose(); }
+            }
         }
 
         private void Bind()
@@ -67,15 +73,21 @@ namespace Dreamy.Shop
             int operation = ++purchaseVersion;
             CancellationToken token = lifetime.Token;
             isPurchasing = true;
-            view.SetPurchaseInteractable(false);
+            IDisposable presentation = null;
             try
             {
+                view.SetPurchaseInteractable(false);
+                if (view is IShopPurchasePresentation presentationView)
+                    activePresentation = presentation = presentationView.BeginPurchasePresentation(offerId, token);
+                token.ThrowIfCancellationRequested();
                 ShopPurchaseResult result = await service.PurchaseAsync(offerId, token);
                 if (!isBound || generation != purchaseGeneration) return;
                 if (result.IsSuccess && presentPurchase != null)
                     await presentPurchase(result);
                 if (result.Status == ShopPurchaseStatus.InsufficientResources && recoverResources != null)
                 {
+                    // A failed purchase must not hold balances during resource acquisition.
+                    ReleasePresentation(presentation);
                     // The modal blocks input until navigation; acquisition may reuse this same Shop.
                     isPurchasing = false;
                     view.SetPurchaseInteractable(true);
@@ -88,12 +100,20 @@ namespace Dreamy.Shop
             catch (OperationCanceledException) when (token.IsCancellationRequested) { }
             finally
             {
+                ReleasePresentation(presentation);
                 if (isBound && generation == purchaseGeneration && operation == purchaseVersion)
                 {
                     isPurchasing = false;
                     view.SetPurchaseInteractable(true);
                 }
             }
+        }
+
+        private void ReleasePresentation(IDisposable presentation)
+        {
+            if (!ReferenceEquals(activePresentation, presentation)) return;
+            activePresentation = null;
+            presentation?.Dispose();
         }
 
         private void Close()

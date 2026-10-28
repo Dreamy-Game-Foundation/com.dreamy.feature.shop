@@ -13,7 +13,7 @@ using UnityEngine.U2D;
 
 namespace Dreamy.Feature.Shop.Integration
 {
-    public sealed class ShopPanel : UIPanel, IShopView
+    public sealed class ShopPanel : UIPanel, IShopView, IShopPurchasePresentation
     {
         [SerializeField] private Button closeButton;
         [SerializeField] private TMP_Text statusText;
@@ -26,6 +26,42 @@ namespace Dreamy.Feature.Shop.Integration
         [SerializeField] private FeedbackPlayer rewardFeedback;
         private Transform rewardSource;
         private int presentationVersion;
+        private ShopViewState currentState;
+        private PurchasePresentation activePresentation;
+
+        private sealed class PurchasePresentation : IDisposable
+        {
+            private ShopPanel owner;
+            private readonly CancellationTokenSource cancellation;
+            public readonly CancellationToken Token;
+            public readonly List<IDisposable> Holds = new();
+            public FeedbackHandle Flight;
+
+            public PurchasePresentation(ShopPanel owner, CancellationToken token)
+            {
+                this.owner = owner;
+                cancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
+                Token = cancellation.Token;
+            }
+
+            public void Dispose()
+            {
+                if (owner == null) return;
+                ShopPanel panel = owner;
+                owner = null;
+                if (ReferenceEquals(panel.activePresentation, this)) panel.activePresentation = null;
+                try { cancellation.Cancel(); }
+                finally
+                {
+                    try { Flight.Stop(); }
+                    finally
+                    {
+                        try { foreach (var hold in Holds) hold.Dispose(); }
+                        finally { Holds.Clear(); cancellation.Dispose(); }
+                    }
+                }
+            }
+        }
         private readonly List<ShopOfferItem> items = new();
         // GetSprite creates clones. This panel owns and destroys them.
         private readonly Dictionary<string, Sprite> icons = new(StringComparer.Ordinal);
@@ -40,43 +76,92 @@ namespace Dreamy.Feature.Shop.Integration
             if (rewardFeedback != null && host != null) rewardFeedback.BindHost(host);
         }
 
+        public IDisposable BeginPurchasePresentation(string offerId, CancellationToken cancellation)
+        {
+            CancelPresentation();
+            var presentation = new PurchasePresentation(this, cancellation);
+            activePresentation = presentation;
+            try
+            {
+                ShopOfferConfig offer = null;
+                if (currentState != null)
+                    foreach (var entry in currentState.Offers)
+                        if (entry.Offer.Id == offerId) { offer = entry.Offer; break; }
+                if (rewardFeedback != null && offer != null)
+                {
+                    var selected = new HashSet<ResourceUIHolder>();
+                    foreach (var reward in offer.Rewards)
+                        foreach (var holder in rewardHolders)
+                            if (holder != null && holder.isActiveAndEnabled &&
+                                holder.ResourceId == reward.Resource.ResourceId && selected.Add(holder))
+                                presentation.Holds.Add(holder.DeferRefresh());
+                }
+                return presentation;
+            }
+            catch { presentation.Dispose(); throw; }
+        }
+
         public async UniTask PresentPurchaseAsync(ShopPurchaseResult result)
         {
             if (!result.IsSuccess || result.Offer == null) return;
-            if (result.Offer.PurchaseKind == ShopPurchaseKind.VirtualCurrency)
-                foreach (var holder in rewardHolders)
-                    if (holder != null && holder.ResourceId == result.Offer.Cost.ResourceId)
-                        holder.RefreshBalance();
-            if (rewardFeedback == null) return;
+            var presentation = activePresentation;
             int version = presentationVersion;
-            statusText.text = "Collecting reward...";
-            foreach (var reward in result.Offer.Rewards)
+            try
             {
-                foreach (var holder in rewardHolders)
+                if (result.Offer.PurchaseKind == ShopPurchaseKind.VirtualCurrency)
+                    foreach (var holder in rewardHolders)
+                        if (holder != null && holder.ResourceId == result.Offer.Cost.ResourceId)
+                            holder.RefreshBalance();
+                if (rewardFeedback == null) return;
+                statusText.text = "Collecting reward...";
+                foreach (var reward in result.Offer.Rewards)
                 {
-                    if (holder == null || holder.ResourceId != reward.Resource.ResourceId) continue;
-                    var handle = rewardFeedback.PlayBetween(rewardSource, holder.IconTarget, reward.Resource.Amount, holder.Icon);
-                    await handle.WaitAsync();
-                    if (version != presentationVersion || !isActiveAndEnabled || handle.Status == FeedbackStatus.Stopped) return;
-                    holder.RefreshBalance();
+                    foreach (var holder in rewardHolders)
+                    {
+                        if (holder == null || holder.ResourceId != reward.Resource.ResourceId) continue;
+                        if (presentation != null) presentation.Token.ThrowIfCancellationRequested();
+                        var handle = rewardFeedback.PlayBetween(rewardSource, holder.IconTarget, reward.Resource.Amount, holder.Icon);
+                        if (presentation != null) presentation.Flight = handle;
+                        await handle.WaitAsync(presentation != null ? presentation.Token : default);
+                        if (version != presentationVersion || !isActiveAndEnabled || handle.Status != FeedbackStatus.Completed) return;
+                        holder.RefreshBalance(); // Any outstanding hold still takes precedence.
+                    }
                 }
             }
+            catch (OperationCanceledException) when (presentation != null && presentation.Token.IsCancellationRequested) { }
+            finally { presentation?.Dispose(); }
+        }
+
+        private void CancelPresentation()
+        {
+            presentationVersion++;
+            activePresentation?.Dispose();
+        }
+
+        private void OnPanelHiding()
+        {
+            CancelPresentation();
+            // Hide may be invoked by navigation rather than the close button.
+            // Cancel the presenter lifetime now, before waiting for HideTween.
+            CloseRequested?.Invoke();
         }
 
         private void OnEnable()
         {
             closeButton.onClick.AddListener(RequestClose);
+            OnPreHide += OnPanelHiding;
         }
         protected override void OnDisable()
         {
             closeButton.onClick.RemoveListener(RequestClose);
-            presentationVersion++;
+            OnPreHide -= OnPanelHiding;
+            CancelPresentation();
             base.OnDisable();
-            rewardFeedback?.StopLast();
         }
 
         public void Render(ShopViewState state)
         {
+            currentState = state;
             EnsureItems(state.Offers.Count);
             for (int index = 0; index < items.Count; index++)
             {
@@ -122,10 +207,15 @@ namespace Dreamy.Feature.Shop.Integration
             }
         }
 
-        public void Close() => Hide().Forget();
+        public void Close()
+        {
+            CancelPresentation();
+            Hide().Forget();
+        }
 
         protected override void OnDestroy()
         {
+            CancelPresentation();
             foreach (ShopOfferItem item in items)
             {
                 if (item == null) continue;
