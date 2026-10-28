@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — 0.3.0 candidate
+## [0.3.0] - 2026-10-28
 
 - Add optional engine-independent `IShopPurchasePresentation`. ShopPresenter acquires its scope before purchase can mutate wallet and releases on completion, failure, cancellation or disposal; failed purchases release before shortage recovery. Legacy IShopView implementations remain compatible.
 - Shop sample defers only reward holders before purchase, waits for icon flights and releases the latest wallet balance afterward. Cost-only holders and independent Home holders continue auto refresh.
