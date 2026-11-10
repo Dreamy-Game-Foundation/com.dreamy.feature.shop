@@ -18,7 +18,7 @@
 - The managed popup presentation replaces the old session and waits for its close before reopening the cached panel; maintain one active popup and ignore stale purchase UI completions.
 - Add regression coverage for repeated same-offer purchases, session replacement and multiple popup close/reopen cycles.
 
-## Unreleased follow-up — 2026-10-16
+## Historical integration follow-up — 2026-10-16 (included in 0.2.0)
 
 - Wire Shop shortage recovery in the sandbox composition root; use the shared Popup stack.
 - NotEnoughResourcesPanel now uses UIPanel and a BaseFeaturePanel prefab variant with inherited SafeArea/tweens.
